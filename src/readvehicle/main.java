@@ -2,7 +2,6 @@ package readvehicle;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +16,13 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 
 
@@ -48,11 +54,25 @@ import com.google.transit.realtime.GtfsRealtime.VehiclePosition;
 //the reference of all the fields that can be retrieved is at:
 //https://developers.google.com/transit/gtfs-realtime/reference#TripDescriptor
 public class main {
+	private static final String databaseURI = "jdbc:mysql://54.83.38.130/mobiusers?"
+			+ "user=mobitest&password=mobitest";
+	private static Connection connect = null;
+	private static Statement statement = null;
 
 	//parse the vehicle position information
 	//incluing lon/lat, trip id, route id, current stop
 	public static void parseVehiclePosition(){
+		String vec_routeid;
+		String vec_tripid;
+		double vec_lon;
+		double vec_lat;
+		double query_time=0;
+		
 		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			connect = DriverManager.getConnection(databaseURI);
+			statement = connect.createStatement();	
+			
 			//the url from MBTA that provide realtime vehicle position info
 			URL _vehiclePositionsUrl = new URL("http://developer.mbta.com/lib/gtrtfs/Vehicles.pb");
 			FeedMessage feed = FeedMessage.parseFrom(_vehiclePositionsUrl.openStream());
@@ -64,29 +84,39 @@ public class main {
 
 				  }
 				  
+				  vec_routeid="-1";
+				  vec_tripid="-1";
+				  vec_lon=-999;
+				  vec_lat=-999;
+				  
+				  
 				  VehiclePosition vehicle = entity.getVehicle();
 				  
 				  // the position of the vehicle
 				  if (vehicle.hasPosition()) {
 					  Position position = vehicle.getPosition();
-					  System.out.println(position.getLatitude());
-					  System.out.println(position.getLongitude());
+					  vec_lat=position.getLatitude();
+					  vec_lon=position.getLongitude();
+					  //System.out.println(position.getLatitude());
+					  //System.out.println(position.getLongitude());
 				  }
 				  
 				  // trip ID and route ID
 				  if (vehicle.hasTrip()){
 					  TripDescriptor trip_ = vehicle.getTrip();
 					  if (trip_.hasTripId()){
-						  System.out.println(trip_.getTripId());
+						  vec_tripid = trip_.getTripId();
+						  //System.out.println(trip_.getTripId());
 					  }
 					  else{
-						  System.out.println("No trip ID");
+						  //System.out.println("No trip ID");
 					  }
 					  if (trip_.hasRouteId()){
-						  System.out.println(trip_.getRouteId());
+						  vec_routeid = trip_.getRouteId();
+						  //System.out.println(trip_.getRouteId());
 					  }
 					  else{
-						  System.out.println("No route ID");
+						  //System.out.println("No route ID");
 					  }
 				  }
 				  
@@ -105,13 +135,24 @@ public class main {
 					  System.out.println(vehicle.getStopId());
 				  }
 				  
-				  
+				  String sql = "INSERT INTO vecloc (routeid, tripid, lon, lat, time) " +
+					        "VALUES ("+
+					        vec_routeid+","+
+					        vec_tripid + ", "+
+							vec_lon + ", " + vec_lat + ", " + query_time + ")";
+				  statement.executeUpdate(sql);
 			}
 			
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -189,7 +230,7 @@ public class main {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		
-		parseTripUpdate();
+		parseVehiclePosition();
 		
 		
 	}
