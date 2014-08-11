@@ -54,7 +54,7 @@ import com.google.transit.realtime.GtfsRealtime.VehiclePosition;
 //the reference of all the fields that can be retrieved is at:
 //https://developers.google.com/transit/gtfs-realtime/reference#TripDescriptor
 public class main {
-	private static final String databaseURI = "jdbc:mysql://54.83.38.130/mobiusers?"
+	private static final String databaseURI = "jdbc:mysql://ec2-54-83-38-130.compute-1.amazonaws.com/mobiusers?"
 			+ "user=mobitest&password=mobitest";
 	private static Connection connect = null;
 	private static Statement statement = null;
@@ -97,8 +97,8 @@ public class main {
 					  Position position = vehicle.getPosition();
 					  vec_lat=position.getLatitude();
 					  vec_lon=position.getLongitude();
-					  //System.out.println(position.getLatitude());
-					  //System.out.println(position.getLongitude());
+					  System.out.println(position.getLatitude());
+					  System.out.println(position.getLongitude());
 				  }
 				  
 				  // trip ID and route ID
@@ -106,17 +106,17 @@ public class main {
 					  TripDescriptor trip_ = vehicle.getTrip();
 					  if (trip_.hasTripId()){
 						  vec_tripid = trip_.getTripId();
-						  //System.out.println(trip_.getTripId());
+						  System.out.println(trip_.getTripId());
 					  }
 					  else{
-						  //System.out.println("No trip ID");
+						  System.out.println("No trip ID");
 					  }
 					  if (trip_.hasRouteId()){
 						  vec_routeid = trip_.getRouteId();
-						  //System.out.println(trip_.getRouteId());
+						  System.out.println(vec_routeid);
 					  }
 					  else{
-						  //System.out.println("No route ID");
+						  System.out.println("No route ID");
 					  }
 				  }
 				  
@@ -126,19 +126,19 @@ public class main {
 				  //If current_status is missing IN_TRANSIT_TO is assumed
 				  //current_status can take value: INCOMING_AT, STOPPED_AT, or IN_TRANSIT_TO
 				  if (vehicle.hasCurrentStopSequence()){
-					  System.out.println(vehicle.getCurrentStopSequence());
+					  //System.out.println(vehicle.getCurrentStopSequence());
 				  }
 				  
 				  //Identifies the current stop. 
 				  //The value must be the same as in stops.txt in the corresponding GTFS feed. 
 				  if (vehicle.hasStopId()){
-					  System.out.println(vehicle.getStopId());
+					  //System.out.println(vehicle.getStopId());
 				  }
 				  
 				  String sql = "INSERT INTO vecloc (routeid, tripid, lon, lat, time) " +
-					        "VALUES ("+
-					        vec_routeid+","+
-					        vec_tripid + ", "+
+					        "VALUES ( "+
+					        "'"+vec_routeid+"'"+" , "+
+					        "'"+vec_tripid+"'" + ", "+
 							vec_lon + ", " + vec_lat + ", " + query_time + ")";
 				  statement.executeUpdate(sql);
 			}
