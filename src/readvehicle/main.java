@@ -31,6 +31,7 @@ import java.sql.Statement;
 
 
 
+
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import com.google.transit.realtime.GtfsRealtime.FeedHeader;
@@ -66,8 +67,7 @@ public class main {
 		String vec_tripid;
 		double vec_lon;
 		double vec_lat;
-		double query_time=0;
-		
+		double query_time=System.currentTimeMillis()/1000;
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			connect = DriverManager.getConnection(databaseURI);
@@ -135,11 +135,11 @@ public class main {
 					  //System.out.println(vehicle.getStopId());
 				  }
 				  
-				  String sql = "INSERT INTO vecloc (routeid, tripid, lon, lat, time) " +
-					        "VALUES ( "+
-					        "'"+vec_routeid+"'"+" , "+
-					        "'"+vec_tripid+"'" + ", "+
-							vec_lon + ", " + vec_lat + ", " + query_time + ")";
+				  String sql = "REPLACE INTO vecloc set tripid=" +
+					        "'"+vec_tripid+"'"+ ", routeid=" +
+					        "'"+vec_routeid+"'"+ ", lon=" +
+							vec_lon + ", lat =" + vec_lat + ", time=" + query_time + ";";
+				  System.out.println(sql);
 				  statement.executeUpdate(sql);
 			}
 			
@@ -156,6 +156,26 @@ public class main {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	
+	public static void cleanTable(){
+		double currentTime=System.currentTimeMillis()/1000;
+		double targetTime=currentTime-3600;
+		String sql = "delete from vecloc where time<"+targetTime+";";
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			connect = DriverManager.getConnection(databaseURI);
+			statement = connect.createStatement();
+			statement.executeUpdate(sql);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 	//parse trip update info,
@@ -230,8 +250,8 @@ public class main {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		
-		parseVehiclePosition();
-		
+		//parseVehiclePosition();
+		cleanTable();
 		
 	}
 
