@@ -81,7 +81,7 @@ public class PeriodicUpdate extends TimerTask {
 		double vec_lon;
 		double vec_lat;
 		double query_time=System.currentTimeMillis()/1000;
-		System.out.println("begin insertion");
+		//System.out.println("begin insertion");
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			connect = DriverManager.getConnection(databaseURI);
@@ -90,7 +90,7 @@ public class PeriodicUpdate extends TimerTask {
 			//the url from MBTA that provide realtime vehicle position info
 			URL _vehiclePositionsUrl = new URL("http://developer.mbta.com/lib/gtrtfs/Vehicles.pb");
 			FeedMessage feed = FeedMessage.parseFrom(_vehiclePositionsUrl.openStream());
-			System.out.println(feed.getEntityCount());
+			//System.out.println(feed.getEntityCount());
 			//each vehicle currently on the road is an entity
 			for (FeedEntity entity : feed.getEntityList()) {
 				if (!entity.hasVehicle()) {
@@ -157,14 +157,14 @@ public class PeriodicUpdate extends TimerTask {
 				statement.executeUpdate(sql);
 
 			}
-			System.out.println("end insertion");
+			//System.out.println("end insertion");
 			String sqlDropTempTable = "drop table if exists vecloctemp;";
 			String sqlCreateTempTable = "CREATE TABLE vecloctemp  ( select * from vecloc);";
 			String sqlTruncateTable = "truncate table vecloc;";
 			statement.executeUpdate(sqlDropTempTable);
 			statement.executeUpdate(sqlCreateTempTable);
 			statement.executeUpdate(sqlTruncateTable);
-			System.out.println("end copy");
+			//System.out.println("end copy");
 
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
